@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, target-densityDpi=device-dpi, minimum-scale=1.0, maximum-scale = 1.0, user-scalable = no">
+  <script src="NoSleep.min.js"></script>
+  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous"></script>
+	  
+  <title>Mappi</title>
+
+  <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+  <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.1/dist/leaflet.css"
+    integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.1/dist/leaflet.js"
+    integrity="sha256-NDI0K41gVbWqfkkaHj15IzU7PtMoelkzyKp8TOaFQ3s=" crossorigin=""></script>
+
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    .leaflet-container {
+      height: 400px;
+      width: 600px;
+      max-width: 100%;
+      max-height: 100%;
+    }
+  </style>
+
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+    }
+
+    #map {
+      height: 100%;
+      width: 100vw;
+    }
+header, footer {
+  background-color: #efefef;
+  color: #1174ba; /* Ajusta el color del texto para que sea visible en el fondo */
+  padding: 10px;
+  text-align: center;
+}
+
+/*.container {
+  flex: 1;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box; /* Asegura que el padding del encabezado no afecte el ancho total */
+  padding-top: 23px; /* Mueve el contenido hacia abajo para evitar el solapamiento con el encabezado */
+}*/
+
+.container {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}	
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 32px auto;
+  margin-top: 15px;
+}
+
+footer {
+  font-weight: bold;
+  padding: 32px;
+  color:#b8bbbd;
+}
+h4{
+  font-size: 23px;
+  text-align: center;
+  color: #1174ba;
+  margin-top: -40px;
+}
+.content h1,
+.content h4 {
+  display: block;
+}
+	  
+  </style>
+
+</head>
+
+<body onload="showGoogleSigninUser()">
+
+<div id="map"></div>
+
+<footer>
+   Powered by Refactorii@2024
+</footer> 
+	
+  <script>
+    var greenIcon = L.icon({
+      iconUrl: 'https://wbsckt3.github.io/front_REPLIT-mapatag_ATLAS-wbskt2/icon.png'
+    });
+    const options = {
+      enableHighAccuracy: true,
+      maximumAge: 1000, // 1s
+      timeout: 2000 // 2s
+    }
+    var map= "";
+    var tiles ="";
+    var marker, circle, markerCameras;
+    const socket = io();	
+     
+     navigator.geolocation.watchPosition(({coords}) => {
+         lat = coords.latitude
+         lon = coords.longitude
+     
+         
+         	map = L.map('map').setView([lat, lon], 17);
+         	tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            	maxZoom: 30, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+         	}).addTo(map);
+         
+
+         const timestamp = Date.now()
+         if(localStorage.getItem('client') === null){ 
+            insertObjectCoords(lat, lon, timestamp)
+            localStorage.setItem('client', timestamp)
+         } else {
+            clientUniqueTimestampId =  localStorage.getItem('client')
+            console.log(clientUniqueTimestampId)
+            getSectorMarkers(lat,lon)
+             socket.emit('load_init_emit', 'hola'); // e.latlng);
+         }         
+         
+
+         //Loop through the markers array
+      /*   for (var i=0; i<markers.length; i++) {
+			
+			var lo = markers[i][1];
+			var la = markers[i][2];
+				var popupText = markers[i][0]; 
+				var markerLocation = new L.LatLng(la, lo);
+				var markerCameras = new L.Marker(markerLocation);
+				map.addLayer(markerCameras);
+			 
+				markerCameras.bindPopup(popupText);
+			
+         } */ 
+        
+         fun(lat, lon)
+     }, console.error, options);
+     
+    var fun = function (la, lo) {
+  function onLocationFound(e) {
+          var radius = e.accuracy / 2;
+          if (marker) { // check
+             map.removeLayer(marker); // remove
+          }
+          // marker = L.marker(e.latlng).addTo(map);
+
+          marker = L.marker(e.latlng, {icon: greenIcon}).addTo(map);
+      }
+      map.on('locationfound', onLocationFound);
+      map.locate({setView: true, watch: true, maxZoom: 17});
+    }
+
+    // al momento de ingreasr el usuario se ingresa a object_coords y es cargado en get sector
+    // junto con otro usuario activo que haya entrado
+    var insertObjectCoords = function(la, lo, clientUniqueTimestampId){
+	    $.ajax({
+	      url: 'https://www.refactorii.com/insertparking',
+	      method : 'POST',
+	      data: {"user_lat":la, "user_lon":lo, "state": clientUniqueTimestampId},
+	      success : function(data){ 
+		ciudad = data
+	      }, error: function(err){console.log('Failed');} 
+	    });
+     }
+ 
+     var getSectorMarkers = function(la, lo){
+	    // para hacer broadcast con socket.io a todos del punto actualizado
+            // socket.emit( 'load_init_emit', {"user_lat":la, "user_lon":lo, "clientUniqueTimestampId": clientUniqueTimestampId} ); 	
+	   $.ajax({
+	      url: 'https://www.refactorii.com/getsector',
+	      method : 'POST',
+	      data: {"user_lat":la, "user_lon":lo,},
+	      success : function(data){
+                console.log(data)
+                data.forEach(function(marker) {
+                  L.marker([marker.latitude, marker.longitude]).addTo(map);
+                });
+	      }, error: function(err){console.log('Failed');} 
+           });
+     }
+
+
+     socket.on('load_init_on', function(msg){
+            console.log(msg);
+        });
+
+     var showGoogleSigninUser = function (){
+	     const formData = JSON.parse(localStorage.getItem("formData"));
+	     alert(JSON.stringify(formData, null, 2));
+     }
+
+  </script>
+</body>
+
+</html>
