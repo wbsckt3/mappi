@@ -214,6 +214,19 @@ h4{
      }
 
   </script>
+
+  <script src="/socket.io/socket.io.js"></script>
+              <h1>Real-Time MongoDB Changes</h1>
+              <ul id="notifications"></ul>
+              <script>
+                 const socket = io('https://www.refactorii.com');
+                 socket.on('databaseChange', (data) => {
+                    const li = document.createElement('li');
+                    li.textContent = `Cambio en la base de datos: ${JSON.stringify(data)}`;
+                    document.getElementById('notifications').appendChild(li);
+                 });
+  </script>  
+	
 </body>
 
 </html>
