@@ -103,8 +103,7 @@ h4{
 	      ImageURL,
 	      Email
 	   };
-           localStorage.setItem("formData", JSON.stringify(formData));
-	   window.location.href = 'https://wbsckt3.github.io/mappi/map.html';    
+           localStorage.setItem("formData", JSON.stringify(formData));    
       }
 
       function decodeJwtResponse(token) {
@@ -175,7 +174,7 @@ h4{
                      const nuevoRegistro = await agregarNuevoRegistro(formData);
                      if (nuevoRegistro) {
                        console.log('Registro creado exitosamente:', nuevoRegistro);
-                       window.location.href = '/courses';                  
+                       window.location.href = 'https://wbsckt3.github.io/mappi/map.html';                  
                      } else {
                        console.error('Error al crear el registro.');
                      }
@@ -183,7 +182,7 @@ h4{
                   } else {
                     const data = await response.json();
                     if (data.GoogleSigninUser) {
-                       window.location.href = '/courses';
+                       window.location.href = 'https://wbsckt3.github.io/mappi/map.html';
                        return data.GoogleSigninUser;
                     } else {
                       return null;
