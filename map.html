@@ -224,7 +224,13 @@ h4{
                     li.textContent = `Cambio en la base de datos: ${JSON.stringify(data)}`;
                     document.getElementById('notifications').appendChild(li);
                  });
-  </script>  
+		 socket.on('connect', () => {
+                    console.log('Conectado a WebSocket'); // Asegúrate de que ves esto en la consola del navegador
+                 });
+                 socket.on('disconnect', () => {
+                    console.log('Desconectado de WebSocket');
+                 });     
+              </script>  
 	
 </body>
 
